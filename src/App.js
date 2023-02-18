@@ -1,11 +1,13 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {MapView} from '@deck.gl/core';
 import {StaticMap} from 'react-map-gl';
+import moment from 'moment';
 import DeckGL from '@deck.gl/react';
 import {ScatterplotLayer} from '@deck.gl/layers';
-import DUMMY_DATA from './dummy_data.json';
+import {Backdrop, CircularProgress, Grid} from '@mui/material';
 import DateTimePicker from './components/DateTimePicker';
 import styles from './App.module.scss';
+import {useAxios} from './hooks';
 
 const INITIAL_VIEW_STATE = {
   longitude: 103.703010666667,
@@ -21,9 +23,45 @@ const MAP_VIEW = new MapView({
   farZMultiplier: 100
 });
 
-function App() {
+const CURRENT_DATE = moment()
 
-  const [currentDate, setCurrentDate] = useState(null);
+function App() {
+  const [currentDate, setCurrentDate] = useState(CURRENT_DATE);
+  const [data, setData] = useState(null);
+  const [extraData, setExtraData] = useState({
+    total: 0,
+    timestamp: null
+  });
+
+  const api = useAxios('https://api.data.gov.sg/v1/transport/taxi-availability', 'get');
+
+  useEffect(() => {
+    fetchData();
+  }, [currentDate])
+
+  useEffect(() => {
+    if(api.prevStatus !== undefined && api.prevStatus !== api.status){
+      switch(api.status){
+        case 1:
+          const feature = api.response.features[0];
+          setData(feature.geometry.coordinates)
+          setExtraData({
+            total: feature.properties.taxi_count,
+            timestamp: moment(feature.properties.timestamp).format('YYYY-MM-DD hh:mm:ss a')
+          })
+          break;
+        default:
+      }
+    }
+  }, [api.status, api.prevStatus]);
+
+  function fetchData(){
+    const request = {};
+    if(currentDate){
+      request.date_time = currentDate.format('YYYY-MM-DDTHH:mm:ss')
+    }
+    api.callApi(request);
+  }
 
   function getTooltip({object}) {
     return (
@@ -37,9 +75,9 @@ function App() {
 
 
   const layers = [
-    new ScatterplotLayer({
+    data && new ScatterplotLayer({
       id: 'taxy',
-      data: DUMMY_DATA.features[0].geometry.coordinates,
+      data: data,
       opacity: 0.4,
       radiusScale: 2,
       radiusMinPixels: 1,
@@ -67,8 +105,15 @@ function App() {
         <StaticMap reuseMaps mapStyle={MAP_STYLE} preventStyleDiffing />
       </DeckGL>
       <div className={styles.datepickerContainer}>
-        <DateTimePicker value={currentDate} onChange={setCurrentDate} />
+        <Grid container direction="column" width="300px">
+          <DateTimePicker minutesStep={60} maxDate={CURRENT_DATE} value={currentDate} onAccept={setCurrentDate} />
+          <span>Total Taxi: {extraData.total}</span>
+          <span>Timestamp: {extraData.timestamp}</span>
+        </Grid>
       </div>
+      <Backdrop sx={{color: 'rgb(160,160,160)'}} open={api.loading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </div>
   );
 }
