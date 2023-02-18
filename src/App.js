@@ -1,23 +1,33 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import {MapView} from '@deck.gl/core';
+import {StaticMap} from 'react-map-gl';
+import DeckGL from '@deck.gl/react';
+import styles from './App.module.scss';
+
+const INITIAL_VIEW_STATE = {
+  longitude: 103.703010666667,
+  latitude: 1.3374685,
+  zoom: 13,
+  pitch: 0,
+  bearing: 0
+};
+
+const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
+
+const MAP_VIEW = new MapView({
+  farZMultiplier: 100
+});
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={styles.App}>
+      <DeckGL
+        views={MAP_VIEW}
+        initialViewState={INITIAL_VIEW_STATE}
+        controller
+      >
+        <StaticMap reuseMaps mapStyle={MAP_STYLE} preventStyleDiffing />
+      </DeckGL>
     </div>
   );
 }
