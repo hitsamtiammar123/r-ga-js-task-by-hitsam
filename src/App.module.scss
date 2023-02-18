@@ -1,6 +1,16 @@
 .App {
   width: 100vw;
   height: 100vh;
+
+  .datepickerContainer{
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    bottom: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 body{
