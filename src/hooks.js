@@ -1,4 +1,4 @@
-import {useState, useMemo, useRef, useEffect} from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import axios from 'axios';
 
 export const usePrevious = (val) => {
@@ -12,8 +12,8 @@ export const usePrevious = (val) => {
 export const useAxios = (url, method, timeout = 500) => {
   const api = useMemo(() => {
     return axios.create({
-      baseURL: url
-    })
+      baseURL: url,
+    });
   }, []);
 
   const [states, setStates] = useState({
@@ -29,7 +29,7 @@ export const useAxios = (url, method, timeout = 500) => {
   function callApi(data, headers = null) {
     let a = null;
     const defaultHeader = headers || {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
     const _headers = headers
       ? {
@@ -55,7 +55,7 @@ export const useAxios = (url, method, timeout = 500) => {
       ...states,
       loading: true,
       status: -1,
-      request: data
+      request: data,
     });
     return new Promise((resolve, reject) => {
       a.then((r) => {
@@ -88,6 +88,6 @@ export const useAxios = (url, method, timeout = 500) => {
     status: states.status,
     prevStatus,
     response: states.response,
-    error: states.error
-  }
+    error: states.error,
+  };
 };
