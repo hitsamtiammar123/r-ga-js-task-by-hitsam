@@ -58,6 +58,14 @@ function App() {
   }
 
   function onDataLoadSuccess() {
+    if (!api.response.features) {
+      setData([]);
+      setExtraData({
+        total: 0,
+        timestamp: currentDate.format('YYYY-MM-DD hh:mm:ss a'),
+      });
+      return;
+    }
     const feature = api.response.features[0];
     setData(feature.geometry.coordinates);
     setExtraData({
